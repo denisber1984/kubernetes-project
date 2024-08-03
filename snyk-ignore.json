@@ -1,0 +1,16 @@
+{
+    "ignore": {
+        "SNYK-DEBIAN12-ZLIB-6008963": [
+            {
+                "reason": "This vulnerability is not relevant to our project",
+                "expires": "2024-12-31T23:59:59Z"
+            }
+        ],
+        "SNYK-DEBIAN12-GIT-6846203": [
+            {
+                "reason": "This vulnerability is not relevant to our project",
+                "expires": "2024-12-31T23:59:59Z"
+            }
+        ]
+    }
+}
