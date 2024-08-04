@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  labels:
+    app: polybot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: polybot
+  template:
+    metadata:
+      labels:
+        app: polybot
+    spec:
+      containers:
+      - name: polybot
+        image: denisber1984/polybot-image:latest
+        ports:
+        - containerPort: 8443
+      imagePullSecrets:
+      - name: regcred
