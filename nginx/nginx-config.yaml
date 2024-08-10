@@ -4,13 +4,50 @@ metadata:
   name: nginx-config
   namespace: demoapp
 data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  1;
+
+    events {
+        worker_connections  1024;
+    }
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        sendfile        on;
+        keepalive_timeout  65;
+
+        server {
+            listen 8444;
+            server_name localhost;
+
+            root /usr/share/nginx/html;
+            index index.html;
+
+            location / {
+                try_files $uri $uri/ =404;
+            }
+
+            location /assets/ {
+                alias /usr/share/nginx/html/assets/;
+            }
+        }
+    }
   index.html: |
-    <!DOCTYPE html>
     <html>
     <head>
-        <title>Welcome to Nginx</title>
+    <title>Jenkins Project</title>
     </head>
     <body>
-        <h1>Welcome to Nginx</h1>
+          <p style="text-align:center">Welcome to my Kubernetes</p>
+          <p style="text-align:center">DevOps Course Nov 2023 - INT College</p>
+          <p style="text-align:center">Created by Ron Letichevskiy the King of Kubernetes</p>
+          <p style="text-align:center">Today's Date and Time is: <span id='date-time'></span></p>
+            <script>
+              var dateAndTime = new Date();
+                 document.getElementById('date-time').innerHTML=dateAndTime.toLocaleString();
+            </script>
     </body>
     </html>

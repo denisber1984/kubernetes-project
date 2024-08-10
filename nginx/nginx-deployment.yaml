@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
+  namespace: demoapp
   labels:
     app: nginx
 spec:
@@ -16,15 +17,41 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: denisber1984/web-image:latest
+        image: denisber1984/mypolybot:web-image-v1
         ports:
         - containerPort: 8444
         volumeMounts:
-        - name: static-content
-          mountPath: /usr/share/nginx/html
-      imagePullSecrets:
-      - name: regcred
+        - name: nginx-config-volume
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: html-content
+          mountPath: /usr/share/nginx/html/index.html
+          subPath: index.html
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8444
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8444
+          initialDelaySeconds: 10
+          periodSeconds: 5
       volumes:
-      - name: static-content
+      - name: nginx-config-volume
         configMap:
           name: nginx-config
+      - name: html-content
+        configMap:
+          name: nginx-config
+      imagePullSecrets:
+      - name: regcred

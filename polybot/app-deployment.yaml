@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: polybot
-        image: denisber1984/polybot-image:latest
+        image: denisber1984/mypolybot:polybot-image-v1
         ports:
         - containerPort: 8443
       imagePullSecrets:
