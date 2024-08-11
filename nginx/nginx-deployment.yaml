@@ -27,6 +27,8 @@ spec:
         - name: html-content
           mountPath: /usr/share/nginx/html/index.html
           subPath: index.html
+        - name: nginx-storage
+          mountPath: /usr/share/nginx/html/storage  # Ensure this mountPath is correct
         resources:
           requests:
             memory: "64Mi"
@@ -53,5 +55,8 @@ spec:
       - name: html-content
         configMap:
           name: nginx-config
+      - name: nginx-storage
+        persistentVolumeClaim:
+          claimName: nginx-pvc
       imagePullSecrets:
       - name: regcred
