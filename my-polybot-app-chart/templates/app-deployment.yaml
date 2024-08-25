@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "my-python-app.fullname" . }}
+  namespace: {{ .Values.namespace }}  # Reference the namespace from values.yaml
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "my-python-app.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "my-python-app.name" . }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8443
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
