@@ -6,8 +6,8 @@ pipeline {
             kind: Pod
             spec:
               containers:
-              - name: docker
-                image: docker:latest
+              - name: jenkins-agent
+                image: denisber1984/jenkins-agent:docker
                 command:
                 - cat
                 tty: true
