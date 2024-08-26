@@ -51,16 +51,14 @@ pipeline {
         stage('Checkout SCM') {
             steps {
                 checkout scm
-                script {
-                    sh 'git config --global --add safe.directory /var/lib/jenkins/workspace/kubernetes-project-pipeline'
-                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                container('jenkins-agent') { // Ensure the commands are executed in the correct container
+                container('jenkins-agent') {
                     script {
+                        sh 'git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline'
                         def commitId = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
                         sh "docker build -t ${DOCKER_IMAGE}:${commitId}-${env.BUILD_NUMBER} ."
                     }
@@ -70,7 +68,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                container('jenkins-agent') { // Ensure the commands are executed in the correct container
+                container('jenkins-agent') {
                     script {
                         def commitId = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
                         sh "docker push ${DOCKER_IMAGE}:${commitId}-${env.BUILD_NUMBER}"
@@ -81,7 +79,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                container('jenkins-agent') { // Ensure the commands are executed in the correct container
+                container('jenkins-agent') {
                     withKubeConfig([credentialsId: KUBECONFIG_CREDENTIAL_ID, namespace: 'demoapp']) {
                         sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                     }
