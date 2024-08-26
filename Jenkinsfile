@@ -31,7 +31,7 @@ pipeline {
         stage('Say Hello') {
             steps {
                 script {
-                    myLib.sayHello('Den')
+                    echo 'Hello, Den'
                 }
             }
         }
@@ -49,7 +49,7 @@ pipeline {
             steps {
                 script {
                     def commitId = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                    myLib.buildDockerImage(DOCKER_IMAGE, commitId, env.BUILD_NUMBER)
+                    sh "docker build -t ${DOCKER_IMAGE}:${commitId}-${env.BUILD_NUMBER} ."
                 }
             }
         }
@@ -58,7 +58,9 @@ pipeline {
             steps {
                 script {
                     def commitId = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                    myLib.pushDockerImage(DOCKER_IMAGE, commitId, env.BUILD_NUMBER)
+                    withDockerRegistry(credentialsId: DOCKER_HUB_CREDENTIALS) {
+                        sh "docker push ${DOCKER_IMAGE}:${commitId}-${env.BUILD_NUMBER}"
+                    }
                 }
             }
         }

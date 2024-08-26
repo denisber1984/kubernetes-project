@@ -4,14 +4,19 @@ metadata:
   name: jenkins-service
   namespace: jenkins
   annotations:
-      prometheus.io/scrape: 'true'
-      prometheus.io/path:   /
-      prometheus.io/port:   '8080'
+    prometheus.io/scrape: 'true'
+    prometheus.io/path:   /
+    prometheus.io/port:   '8080'
 spec:
   selector:
     app: jenkins-server
   type: NodePort
   ports:
-    - port: 8080
+    - name: http  # Added name field
+      port: 8080
       targetPort: 8080
       nodePort: 32000
+    - name: jnlp  # Added name field
+      port: 50000  # Expose JNLP port
+      targetPort: 50000
+      nodePort: 32001  # Optional: NodePort for external access
