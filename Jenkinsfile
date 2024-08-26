@@ -14,10 +14,15 @@ pipeline {
                 volumeMounts:
                 - name: docker-sock
                   mountPath: /var/run/docker.sock
+                - mountPath: /home/jenkins/agent
+                  name: workspace-volume
+                  readOnly: false
               volumes:
                 - name: docker-sock
                   hostPath:
                     path: /var/run/docker.sock
+                - name: workspace-volume
+                  emptyDir: {}
             '''
         }
     }
