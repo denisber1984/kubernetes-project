@@ -6,11 +6,18 @@ pipeline {
             kind: Pod
             spec:
               containers:
-              - name: jenkins-agent
-                image: denisber1984/jenkins-agent:latest
+              - name: docker
+                image: docker:latest
                 command:
                 - cat
                 tty: true
+                volumeMounts:
+                - name: docker-sock
+                  mountPath: /var/run/docker.sock
+              volumes:
+                - name: docker-sock
+                  hostPath:
+                    path: /var/run/docker.sock
             '''
         }
     }
@@ -30,9 +37,7 @@ pipeline {
     stages {
         stage('Say Hello') {
             steps {
-                script {
-                    echo 'Hello, Den'
-                }
+                echo 'Hello, Den'
             }
         }
 
@@ -58,9 +63,7 @@ pipeline {
             steps {
                 script {
                     def commitId = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                    withDockerRegistry(credentialsId: DOCKER_HUB_CREDENTIALS) {
-                        sh "docker push ${DOCKER_IMAGE}:${commitId}-${env.BUILD_NUMBER}"
-                    }
+                    sh "docker push ${DOCKER_IMAGE}:${commitId}-${env.BUILD_NUMBER}"
                 }
             }
         }
@@ -68,9 +71,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 withKubeConfig([credentialsId: KUBECONFIG_CREDENTIAL_ID, namespace: 'demoapp']) {
-                    script {
-                        sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
-                    }
+                    sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                 }
             }
         }
