@@ -7,7 +7,7 @@ pipeline {
             spec:
               containers:
               - name: jenkins-agent
-                image: denisber1984/jenkins-agent:docker
+                image: denisber1984/jenkins-agent:helm-docker
                 command:
                 - cat
                 tty: true
