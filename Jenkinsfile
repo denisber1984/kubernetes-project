@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            yaml '''
+            yaml """
             apiVersion: v1
             kind: Pod
             spec:
@@ -11,34 +11,20 @@ pipeline {
                 command:
                 - cat
                 tty: true
-                securityContext:
-                  runAsUser: 0
                 volumeMounts:
-                - name: docker-sock
-                  mountPath: /var/run/docker.sock
+                - mountPath: /var/run/docker.sock
+                  name: docker-sock
                 - mountPath: /home/jenkins/agent
                   name: workspace-volume
-                  readOnly: false
               volumes:
-                - name: docker-sock
-                  hostPath:
-                    path: /var/run/docker.sock
-                - name: workspace-volume
-                  emptyDir: {}
-            '''
+              - hostPath:
+                  path: /var/run/docker.sock
+                name: docker-sock
+              - emptyDir:
+                  medium: ""
+                name: workspace-volume
+            """
         }
-    }
-
-    environment {
-        DOCKER_HUB_CREDENTIALS = credentials('dockerhub')
-        DOCKER_IMAGE = 'denisber1984/mypolybot'
-        KUBECONFIG = '/var/jenkins_home/.kube/config'
-    }
-
-    options {
-        buildDiscarder(logRotator(daysToKeepStr: '30'))
-        disableConcurrentBuilds()
-        timestamps()
     }
 
     stages {
@@ -54,34 +40,37 @@ pipeline {
             }
         }
 
+        stage('Verify Files') {
+            steps {
+                sh 'ls -R ./my-polybot-app-chart'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
-                container('jenkins-agent') {
-                    script {
-                        sh 'git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline'
-                        def commitId = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                        sh "docker build -t denisber1984/mypolybot:${commitId}-${env.BUILD_NUMBER} jenkins-agent"
-                    }
+                script {
+                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    sh "docker build -t denisber1984/mypolybot:${commitHash} jenkins-agent"
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                container('jenkins-agent') {
-                    script {
-                        def commitId = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-                        sh 'echo "$DOCKER_HUB_CREDENTIALS_PSW" | docker login -u "$DOCKER_HUB_CREDENTIALS_USR" --password-stdin'
-                        sh "docker push ${DOCKER_IMAGE}:${commitId}-${env.BUILD_NUMBER}"
+                script {
+                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
+                        sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
                     }
+                    sh "docker push denisber1984/mypolybot:${commitHash}"
                 }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                container('jenkins-agent') {
-                    withEnv(["KUBECONFIG=/var/jenkins_home/.kube/config"]) {
+                container('jnlp') {
+                    withEnv(["KUBECONFIG=${env.WORKSPACE}/.kube/config"]) {
                         sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                     }
                 }
