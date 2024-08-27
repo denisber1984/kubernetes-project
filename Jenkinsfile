@@ -32,7 +32,7 @@ pipeline {
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub')
         DOCKER_IMAGE = 'denisber1984/mypolybot'
-        KUBECONFIG_CREDENTIAL_ID = 'kubeconfig'
+        KUBECONFIG = '/var/jenkins_home/.kube/config'
     }
 
     options {
@@ -81,7 +81,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 container('jenkins-agent') {
-                    withKubeConfig([credentialsId: KUBECONFIG_CREDENTIAL_ID, namespace: 'demoapp']) {
+                    withEnv(["KUBECONFIG=/var/jenkins_home/.kube/config"]) {
                         sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                     }
                 }
