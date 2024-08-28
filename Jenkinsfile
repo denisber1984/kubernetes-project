@@ -50,11 +50,11 @@ pipeline {
             steps {
                 script {
                     // Print Docker version and PATH to confirm environment
-                    sh 'docker --version'
+                    sh '/usr/bin/docker --version'
                     sh 'echo $PATH'
 
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh "docker build -t denisber1984/mypolybot:${commitHash} ."
+                    sh "/usr/bin/docker build -t denisber1984/mypolybot:${commitHash} ."
                 }
             }
         }
@@ -64,9 +64,9 @@ pipeline {
                 script {
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
-                        sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
+                        sh "echo ${DOCKER_HUB_CREDENTIALS} | /usr/bin/docker login -u denisber1984 --password-stdin"
                     }
-                    sh "docker push denisber1984/mypolybot:${commitHash}"
+                    sh "/usr/bin/docker push denisber1984/mypolybot:${commitHash}"
                 }
             }
         }
