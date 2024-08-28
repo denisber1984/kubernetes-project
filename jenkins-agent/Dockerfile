@@ -1,5 +1,7 @@
+# Start with the Jenkins inbound-agent as the base image
 FROM jenkins/inbound-agent:latest
 
+# Switch to root user to install Docker and Helm
 USER root
 
 # Install dependencies
@@ -22,7 +24,11 @@ RUN echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_releas
 RUN apt-get update && \
     apt-get install -y docker-ce docker-ce-cli containerd.io
 
+# Ensure Docker is linked correctly in /usr/bin if not already present
+RUN if [ ! -f /usr/bin/docker ]; then ln -s /usr/local/bin/docker /usr/bin/docker; fi
+
 # Install Helm
 RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+# Switch back to the Jenkins user
 USER jenkins
