@@ -50,6 +50,9 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker Image"
+                    // Print Docker version and PATH
+                    sh 'docker --version || true'
+                    sh 'echo $PATH'
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     sh "docker build -t denisber1984/mypolybot:${commitHash} ."
                 }
