@@ -50,11 +50,11 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker Image"
-                    // Print Docker version and PATH
-                    sh 'docker --version || true'
+                    // Set the PATH explicitly
+                    sh 'export PATH=$PATH:/usr/local/bin && docker --version || true'
                     sh 'echo $PATH'
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh "docker build -t denisber1984/mypolybot:${commitHash} ."
+                    sh 'export PATH=$PATH:/usr/local/bin && docker build -t denisber1984/mypolybot:${commitHash} .'
                 }
             }
         }
@@ -66,7 +66,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
                         sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
                     }
-                    sh "docker push denisber1984/mypolybot:${commitHash}"
+                    sh "export PATH=\$PATH:/usr/local/bin && docker push denisber1984/mypolybot:${commitHash}"
                 }
             }
         }
