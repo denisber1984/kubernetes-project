@@ -50,7 +50,7 @@ pipeline {
             steps {
                 script {
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh "docker build -t denisber1984/mypolybot:${commitHash} jenkins-agent"
+                    sh "docker build -t denisber1984/mypolybot:${commitHash} ."
                 }
             }
         }
