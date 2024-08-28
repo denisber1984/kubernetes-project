@@ -11,6 +11,9 @@ pipeline {
                 command:
                 - cat
                 tty: true
+                env:
+                - name: PATH
+                  value: "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin"
                 volumeMounts:
                 - mountPath: /var/run/docker.sock
                   name: docker-sock
@@ -50,7 +53,8 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker Image"
-                    // Set the PATH explicitly
+                    // Explicitly set PATH and alias
+                    sh 'alias docker=/usr/local/bin/docker'
                     sh 'export PATH=$PATH:/usr/local/bin && docker --version || true'
                     sh 'echo $PATH'
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
