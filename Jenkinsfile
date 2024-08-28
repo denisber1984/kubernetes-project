@@ -49,14 +49,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'echo "Building Docker Image"'
-
-                    // Create a script to build Docker image
-                    sh '''
-                    #!/bin/bash
-                    docker --version
-                    docker build -t denisber1984/mypolybot:$(git rev-parse --short HEAD) .
-                    '''
+                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    sh "docker build -t denisber1984/mypolybot:${commitHash} ."
                 }
             }
         }
@@ -64,10 +58,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    sh '''
-                    #!/bin/bash
-                    docker push denisber1984/mypolybot:$(git rev-parse --short HEAD)
-                    '''
+                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
+                        sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
+                    }
+                    sh "docker push denisber1984/mypolybot:${commitHash}"
                 }
             }
         }
