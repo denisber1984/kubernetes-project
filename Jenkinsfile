@@ -55,12 +55,13 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    echo "Checking Docker installation"
+                    sh 'ls -la /usr/bin/docker || echo "/usr/bin/docker not found"'
+                    sh 'ls -la /usr/local/bin/docker || echo "/usr/local/bin/docker not found"'
+                    sh 'which docker || echo "docker not found in PATH"'
+                    sh 'docker --version || echo "Docker command failed"'
+
                     echo "Building Docker Image"
-                    sh 'which docker || echo "Docker not found in PATH"'
-                    sh 'ls -l /usr/local/bin/ | grep docker || echo "Docker binary not in /usr/local/bin"'
-                    sh 'alias docker=/usr/local/bin/docker'
-                    sh 'export PATH=$PATH:/usr/bin:/usr/local/bin && docker --version || true'
-                    sh 'echo $PATH'
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     sh 'export PATH=$PATH:/usr/bin:/usr/local/bin && docker build -t denisber1984/mypolybot:${commitHash} .'
                 }
