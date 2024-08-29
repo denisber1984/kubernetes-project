@@ -52,28 +52,31 @@ pipeline {
         }
 
         stage('Build Docker Image') {
+            environment {
+                DOCKER_PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin"
+            }
             steps {
                 script {
                     echo "Building Docker Image"
-                    sh 'which docker || echo "Docker not found in PATH"'
-                    sh 'ls -l /usr/local/bin/ | grep docker || echo "Docker binary not in /usr/local/bin"'
-                    sh 'alias docker=/usr/local/bin/docker'
-                    sh 'export PATH=$PATH:/usr/local/bin && docker --version || true'
-                    sh 'echo $PATH'
+                    sh 'export PATH=$DOCKER_PATH && which docker || echo "Docker not found in PATH"'
+                    sh 'export PATH=$DOCKER_PATH && docker --version || echo "Docker command failed"'
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh 'export PATH=$PATH:/usr/local/bin && docker build -t denisber1984/mypolybot:${commitHash} .'
+                    sh 'export PATH=$DOCKER_PATH && docker build -t denisber1984/mypolybot:${commitHash} .'
                 }
             }
         }
 
         stage('Push Docker Image') {
+            environment {
+                DOCKER_PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin"
+            }
             steps {
                 script {
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
-                        sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
+                        sh "export PATH=$DOCKER_PATH && echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
                     }
-                    sh "export PATH=\$PATH:/usr/local/bin && docker push denisber1984/mypolybot:${commitHash}"
+                    sh "export PATH=$DOCKER_PATH && docker push denisber1984/mypolybot:${commitHash}"
                 }
             }
         }
