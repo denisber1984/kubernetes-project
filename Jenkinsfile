@@ -59,10 +59,10 @@ pipeline {
                     sh 'which docker || echo "Docker not found in PATH"'
                     sh 'ls -l /usr/local/bin/ | grep docker || echo "Docker binary not in /usr/local/bin"'
                     sh 'alias docker=/usr/local/bin/docker'
-                    sh 'export PATH=$PATH:/usr/local/bin && docker --version || true'
+                    sh 'export PATH=$PATH:/usr/bin:/usr/local/bin && docker --version || true'
                     sh 'echo $PATH'
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh 'export PATH=$PATH:/usr/local/bin && docker build -t denisber1984/mypolybot:${commitHash} .'
+                    sh 'export PATH=$PATH:/usr/bin:/usr/local/bin && docker build -t denisber1984/mypolybot:${commitHash} .'
                 }
             }
         }
