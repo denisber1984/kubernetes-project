@@ -1,16 +1,16 @@
-# Use the official Jenkins inbound agent as the base image
+# Start with the Jenkins inbound agent as the base image
 FROM jenkins/inbound-agent:latest
 
-# Switch to the root user to install packages
+# Switch to root user to install packages
 USER root
 
-# Update package lists and install Docker CLI using apt-get
+# Install Docker CLI and other dependencies
 RUN apt-get update && \
     apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common && \
-    apt-get install -y docker.io
+    curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
+    echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli
 
-# Revert back to Jenkins user
+# Switch back to the Jenkins user
 USER jenkins
-
-# Entry point
-ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins-agent"]
