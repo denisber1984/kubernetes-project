@@ -4,15 +4,10 @@ FROM jenkins/inbound-agent:latest
 # Switch to the root user to install packages
 USER root
 
-# Update package lists and install dependencies
+# Update package lists and install Docker CLI using apt-get
 RUN apt-get update && \
-    apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
-
-# Install Docker using the official get.docker.com script
-RUN curl -fsSL https://get.docker.com | sh
-
-# Ensure Docker is in the correct path
-RUN ln -s /usr/local/bin/docker /usr/bin/docker || true
+    apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common && \
+    apt-get install -y docker.io
 
 # Revert back to Jenkins user
 USER jenkins
