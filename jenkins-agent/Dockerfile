@@ -1,34 +1,21 @@
-# Start with the Jenkins inbound-agent as the base image
+# Use the official Jenkins inbound agent as the base image
 FROM jenkins/inbound-agent:latest
 
-# Switch to root user to install Docker and Helm
+# Switch to the root user to install packages
 USER root
 
-# Install dependencies
+# Update package lists and install dependencies
 RUN apt-get update && \
-    apt-get install -y \
-        apt-transport-https \
-        ca-certificates \
-        curl \
-        gnupg-agent \
-        software-properties-common \
-        lsb-release
+    apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
 
-# Add Docker’s official GPG key
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+# Install Docker using the official get.docker.com script
+RUN curl -fsSL https://get.docker.com | sh
 
-# Set up the stable repository for Docker
-RUN echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list
+# Ensure Docker is in the correct path
+RUN ln -s /usr/local/bin/docker /usr/bin/docker || true
 
-# Install Docker Engine
-RUN apt-get update && \
-    apt-get install -y docker-ce docker-ce-cli containerd.io
-
-# Ensure Docker is linked correctly in /usr/bin if not already present
-RUN if [ ! -f /usr/bin/docker ]; then ln -s /usr/local/bin/docker /usr/bin/docker; fi
-
-# Install Helm
-RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-# Switch back to the Jenkins user
+# Revert back to Jenkins user
 USER jenkins
+
+# Entry point
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins-agent"]

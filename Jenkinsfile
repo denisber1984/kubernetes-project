@@ -8,6 +8,8 @@ pipeline {
               containers:
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-docker
+                securityContext:
+                  privileged: true
                 command:
                 - cat
                 tty: true
@@ -53,11 +55,8 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker Image"
-                    // Debugging steps
                     sh 'which docker || echo "Docker not found in PATH"'
                     sh 'ls -l /usr/local/bin/ | grep docker || echo "Docker binary not in /usr/local/bin"'
-
-                    // Explicitly set PATH and alias
                     sh 'alias docker=/usr/local/bin/docker'
                     sh 'export PATH=$PATH:/usr/local/bin && docker --version || true'
                     sh 'echo $PATH'
