@@ -55,13 +55,12 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker Image"
+                    sh 'export PATH=$PATH:/usr/local/bin:/usr/bin && echo "PATH after modification: $PATH"'
                     sh 'which docker || echo "Docker not found in PATH"'
-                    sh 'ls -l /usr/local/bin/ | grep docker || echo "Docker binary not in /usr/local/bin"'
-                    sh 'alias docker=/usr/local/bin/docker'
-                    sh 'export PATH=$PATH:/usr/local/bin && docker --version || true'
-                    sh 'echo $PATH'
+                    sh 'ls -l /usr/bin/docker || echo "Docker binary not found at /usr/bin/docker"'
+                    sh 'docker --version || echo "Docker command not found"'
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh 'export PATH=$PATH:/usr/local/bin && docker build -t denisber1984/mypolybot:${commitHash} .'
+                    sh 'docker build -t denisber1984/mypolybot:${commitHash} .'
                 }
             }
         }
@@ -85,6 +84,12 @@ pipeline {
                         sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                     }
                 }
+            }
+        }
+
+        stage('Interactive Shell Debug') {
+            steps {
+                sh 'export PATH=$PATH:/usr/local/bin:/usr/bin && docker run --rm -it alpine:3.12 sh'
             }
         }
     }
