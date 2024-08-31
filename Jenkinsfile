@@ -66,17 +66,15 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.withTool('docker') {
-                        echo "Checking Docker installation"
-                        sh 'ls -la /usr/bin/docker || echo "/usr/bin/docker not found"'
-                        sh 'ls -la /usr/local/bin/docker || echo "/usr/local/bin/docker not found"'
-                        sh 'which docker || echo "docker not found in PATH"'
-                        sh 'docker --version || echo "Docker command failed"'
+                    echo "Checking Docker installation"
+                    sh 'ls -la /usr/bin/docker || echo "/usr/bin/docker not found"'
+                    sh 'ls -la /usr/local/bin/docker || echo "/usr/local/bin/docker not found"'
+                    sh 'which docker || echo "docker not found in PATH"'
+                    sh 'docker --version || echo "Docker command failed"'
 
-                        echo "Building Docker Image"
-                        def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                        sh 'docker build -t denisber1984/mypolybot:${commitHash} .'
-                    }
+                    echo "Building Docker Image"
+                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    sh 'export PATH=$PATH:/usr/bin:/usr/local/bin && docker build -t denisber1984/mypolybot:${commitHash} .'
                 }
             }
         }
@@ -84,13 +82,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withTool('docker') {
-                        def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                        withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
-                            sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
-                        }
-                        sh "docker push denisber1984/mypolybot:${commitHash}"
+                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
+                        sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
                     }
+                    sh "export PATH=\$PATH:/usr/local/bin && docker push denisber1984/mypolybot:${commitHash}"
                 }
             }
         }
