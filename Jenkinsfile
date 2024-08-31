@@ -34,6 +34,13 @@ pipeline {
     }
 
     stages {
+        stage('Debug PATH') {
+            steps {
+                sh 'echo $PATH'
+                sh 'docker --version'
+            }
+        }
+
         stage('Say Hello') {
             steps {
                 echo 'Hello, Den'
