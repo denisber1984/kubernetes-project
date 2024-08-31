@@ -16,7 +16,7 @@ pipeline {
                 tty: true
                 env:
                 - name: PATH
-                  value: "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin"
+                  value: "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin:/usr/local/docker:/usr/docker:/opt/bin:/opt/docker/bin"
                 volumeMounts:
                 - mountPath: /var/run/docker.sock
                   name: docker-sock
