@@ -34,7 +34,7 @@ pipeline {
     }
 
     tools {
-        'org.jenkinsci.plugins.docker.commons.tools.DockerTool' 'docker' // Specify the Docker tool to use
+        docker 'docker' // Specify the Docker tool to use
     }
 
     stages {
