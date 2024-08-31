@@ -34,7 +34,7 @@ pipeline {
     }
 
     tools {
-        docker 'docker' // Specify the Docker tool to use
+        dockerTool 'docker' // Specify the Docker tool to use
     }
 
     stages {
