@@ -36,11 +36,16 @@ pipeline {
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Prepare Git Safe Directory') {   // New stage to fix the Git issue
             steps {
                 script {
                     sh 'git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline'
                 }
+            }
+        }
+
+        stage('Checkout SCM') {
+            steps {
                 checkout scm
             }
         }
