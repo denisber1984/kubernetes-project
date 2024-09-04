@@ -5,19 +5,14 @@ pipeline {
             apiVersion: v1
             kind: Pod
             spec:
-              serviceAccountName: jenkins-admin
               containers:
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-docker
-                imagePullPolicy: Always
                 securityContext:
                   privileged: true
                 command:
                 - cat
                 tty: true
-                env:
-                - name: PATH
-                  value: "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin"
                 volumeMounts:
                 - mountPath: /var/run/docker.sock
                   name: docker-sock
@@ -35,12 +30,6 @@ pipeline {
     }
 
     stages {
-        stage('Say Hello') {
-            steps {
-                echo 'Hello, Den'
-            }
-        }
-
         stage('Checkout SCM') {
             steps {
                 checkout scm
@@ -55,32 +44,36 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    echo "Checking Docker installation"
-                    sh 'docker --version || echo "Docker command failed"'
+                container('jenkins-agent') {   // Ensure Docker commands run in the correct container
+                    script {
+                        echo "Checking Docker installation"
+                        sh 'docker --version || echo "Docker command failed"'
 
-                    echo "Building Docker Image"
-                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh "docker build -t denisber1984/mypolybot:${commitHash} ."
+                        echo "Building Docker Image"
+                        def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                        sh "docker build -t denisber1984/mypolybot:${commitHash} ."
+                    }
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
-                        sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
+                container('jenkins-agent') {   // Ensure Docker push runs in the correct container
+                    script {
+                        def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                        withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
+                            sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
+                        }
+                        sh "docker push denisber1984/mypolybot:${commitHash}"
                     }
-                    sh "docker push denisber1984/mypolybot:${commitHash}"
                 }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                container('jnlp') {
+                container('jenkins-agent') {   // Ensure Kubernetes deployment runs in the jenkins-agent container with helm
                     withEnv(["KUBECONFIG=${env.WORKSPACE}/.kube/config"]) {
                         sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                     }
