@@ -9,6 +9,7 @@ pipeline {
               containers:
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-docker
+                imagePullPolicy: Always
                 securityContext:
                   privileged: true
                 command:
