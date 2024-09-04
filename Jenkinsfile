@@ -12,7 +12,11 @@ pipeline {
                   privileged: true       # Enable privileged mode for Docker
                   runAsUser: 0           # Run as root user to access Docker socket
                 command:
-                - cat
+                - sh
+                - -c
+                - |
+                  git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline
+                  cat
                 tty: true
                 volumeMounts:
                 - mountPath: /var/run/docker.sock
@@ -36,14 +40,6 @@ pipeline {
     }
 
     stages {
-        stage('Prepare Git Safe Directory') {   // New stage to fix the Git issue
-            steps {
-                script {
-                    sh 'git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline'
-                }
-            }
-        }
-
         stage('Checkout SCM') {
             steps {
                 checkout scm
