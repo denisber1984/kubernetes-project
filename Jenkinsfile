@@ -9,7 +9,8 @@ pipeline {
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-docker
                 securityContext:
-                  privileged: true
+                  privileged: true       # Enable privileged mode for Docker
+                  runAsUser: 0           # Run as root user to access Docker socket
                 command:
                 - cat
                 tty: true
@@ -44,7 +45,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                container('jenkins-agent') {   // Ensure Docker commands run in the correct container
+                container('jenkins-agent') {   // Ensure Docker commands run in the jenkins-agent container
                     script {
                         echo "Checking Docker installation"
                         sh 'docker --version || echo "Docker command failed"'
@@ -59,7 +60,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                container('jenkins-agent') {   // Ensure Docker push runs in the correct container
+                container('jenkins-agent') {   // Ensure Docker push runs in the jenkins-agent container
                     script {
                         def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                         withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
