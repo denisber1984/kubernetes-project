@@ -30,9 +30,17 @@ pipeline {
         }
     }
 
+    environment {
+        KUBECONFIG = "${env.WORKSPACE}/.kube/config"  // Add KUBECONFIG environment variable
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub')  // Add DockerHub credentials
+    }
+
     stages {
         stage('Checkout SCM') {
             steps {
+                script {
+                    sh 'git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline'
+                }
                 checkout scm
             }
         }
@@ -75,7 +83,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 container('jenkins-agent') {   // Ensure Kubernetes deployment runs in the jenkins-agent container with helm
-                    withEnv(["KUBECONFIG=${env.WORKSPACE}/.kube/config"]) {
+                    withEnv(["KUBECONFIG=${env.KUBECONFIG}"]) {
                         sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                     }
                 }
