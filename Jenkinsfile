@@ -56,7 +56,7 @@ pipeline {
             steps {
                 container('jenkins-agent') {   // Ensure Docker commands run in the jenkins-agent container
                     script {
-                    withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS') {
                         sh "docker login"
                         echo "Checking Docker installation"
                         sh 'docker --version || echo "Docker command failed"'
