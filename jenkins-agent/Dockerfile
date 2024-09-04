@@ -12,5 +12,8 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y docker-ce-cli
 
+# Install Helm
+RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
 # Switch back to the Jenkins user
 USER jenkins

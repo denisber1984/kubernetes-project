@@ -87,8 +87,15 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 container('jenkins-agent') {   // Ensure Kubernetes deployment runs in the jenkins-agent container with helm
-                    withEnv(["KUBECONFIG=${env.KUBECONFIG}"]) {
-                        sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
+                    script {
+                        withEnv(["KUBECONFIG=${env.KUBECONFIG}"]) {
+                            // Verify if Helm is installed and check the PATH
+                            sh 'echo $PATH'
+                            sh 'helm version'
+
+                            // Perform the Helm upgrade/install command
+                            sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
+                        }
                     }
                 }
             }
