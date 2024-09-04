@@ -56,15 +56,15 @@ pipeline {
             steps {
                 container('jenkins-agent') {   // Ensure Docker commands run in the jenkins-agent container
                     script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS') {
-                        sh "docker login"
-                        echo "Checking Docker installation"
-                        sh 'docker --version || echo "Docker command failed"'
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS') {
+                            sh "docker login"
+                            echo "Checking Docker installation"
+                            sh 'docker --version || echo "Docker command failed"'
 
-                        echo "Building Docker Image"
-                        def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                        // Use the Dockerfile in the polybot/ folder to build the PolyBot image
-                        sh "docker build -t denisber1984/mypolybot:${commitHash} -f polybot/Dockerfile ."
+                            echo "Building Docker Image"
+                            def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                            // Use the Dockerfile in the polybot/ folder to build the PolyBot image
+                            sh "docker build -t denisber1984/mypolybot:${commitHash} -f polybot/Dockerfile ."
                         }
                     }
                 }
