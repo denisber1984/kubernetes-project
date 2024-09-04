@@ -36,7 +36,6 @@ pipeline {
 
     environment {
         KUBECONFIG = "${env.WORKSPACE}/.kube/config"  // Add KUBECONFIG environment variable
-        DOCKER_HUB_CREDENTIALS = credentials('dockerhub')  // Add DockerHub credentials
     }
 
     stages {
@@ -75,10 +74,11 @@ pipeline {
                 container('jenkins-agent') {   // Ensure Docker push runs in the jenkins-agent container
                     script {
                         def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                        withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_HUB_CREDENTIALS')]) {
-                            sh "echo ${DOCKER_HUB_CREDENTIALS} | docker login -u denisber1984 --password-stdin"
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                            // Using DockerHub credentials for login
+                            sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
+                            sh "docker push denisber1984/mypolybot:${commitHash}"
                         }
-                        sh "docker push denisber1984/mypolybot:${commitHash}"
                     }
                 }
             }
