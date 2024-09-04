@@ -2,11 +2,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: jenkins-admin
-subjects:
-  - kind: ServiceAccount
-    name: jenkins-admin
-    namespace: jenkins
 roleRef:
-  kind: ClusterRole
-  name: jenkins-admin
   apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin   # Grants full admin permissions
+subjects:
+- kind: ServiceAccount
+  name: default    # The default service account in the 'jenkins' namespace
+  namespace: jenkins
