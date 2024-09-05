@@ -91,9 +91,10 @@ pipeline {
                         withEnv(["KUBECONFIG=${env.KUBECONFIG}"]) {
                             // Verify if Helm is installed and check the PATH
                             sh 'echo $PATH'
-                            sh 'helm version'
+                            sh 'helm version || echo "Helm command not found"'
+                            sh 'which helm || echo "Helm not installed or not in PATH"'
 
-                            // Perform the Helm upgrade/install command
+                            // Perform the Helm upgrade/install command if helm is available
                             sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                         }
                     }
