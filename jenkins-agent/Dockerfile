@@ -15,8 +15,8 @@ RUN apt-get update && \
 # Install Helm
 RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-# Ensure helm is in PATH
-RUN ln -s /usr/local/bin/helm /usr/bin/helm
+# Verify Helm is installed in the correct directory
+RUN helm version
 
 # Switch back to the Jenkins user
 USER jenkins
