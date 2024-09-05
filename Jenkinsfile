@@ -8,6 +8,7 @@ pipeline {
               containers:
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-docker
+                imagePullPolicy: Always
                 securityContext:
                   privileged: true       # Enable privileged mode for Docker
                   runAsUser: 0           # Run as root user to access Docker socket
