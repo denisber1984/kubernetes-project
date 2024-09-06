@@ -35,7 +35,7 @@ pipeline {
     }
 
     environment {
-        KUBECONFIG = "${env.WORKSPACE}/.kube/config"
+        KUBECONFIG = "${env.WORKSPACE}/.kube/config"  // Add KUBECONFIG environment variable
     }
 
     stages {
@@ -99,7 +99,7 @@ pipeline {
 
     post {
         always {
-            // cleanWs()  # Comment this out for now
+            cleanWs()  // Ensure workspace is cleaned up at the end
         }
     }
 }
