@@ -5,7 +5,7 @@ pipeline {
             apiVersion: v1
             kind: Pod
             spec:
-              serviceAccountName: jenkins-admin  # Ensuring the service account is set
+              serviceAccountName: jenkins-admin
               containers:
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-kubectl
@@ -36,10 +36,16 @@ pipeline {
     }
 
     environment {
-        KUBECONFIG = "${env.WORKSPACE}/.kube/config"  // Add KUBECONFIG environment variable
+        KUBECONFIG = "${env.WORKSPACE}/.kube/config"
     }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs() // Clean workspace before starting
+            }
+        }
+
         stage('Checkout SCM') {
             steps {
                 checkout scm
@@ -50,6 +56,7 @@ pipeline {
         stage('Verify Files') {
             steps {
                 sh 'ls -R ./my-polybot-app-chart'
+                sh 'cat ./my-polybot-app-chart/Chart.yaml'
             }
         }
 
