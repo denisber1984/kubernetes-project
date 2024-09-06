@@ -15,11 +15,13 @@ RUN apt-get update && \
 # Install Helm
 RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-# Copy Helm to /usr/local/bin and /usr/bin to ensure it's in the PATH
-RUN cp /usr/local/bin/helm /usr/bin/helm && ln -sf /usr/bin/helm /usr/local/bin/helm
+# Install kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    chmod +x kubectl && mv kubectl /usr/local/bin/kubectl
 
-# Verify Helm installation
-RUN helm version
+# Ensure helm and kubectl are in PATH
+RUN ln -s /usr/local/bin/helm /usr/bin/helm && \
+    ln -s /usr/local/bin/kubectl /usr/bin/kubectl
 
 # Switch back to the Jenkins user
 USER jenkins
