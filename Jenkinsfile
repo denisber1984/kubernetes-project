@@ -5,13 +5,12 @@ pipeline {
             apiVersion: v1
             kind: Pod
             spec:
-              serviceAccountName: jenkins-admin  # Specify the correct ServiceAccount
               containers:
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-kubectl
                 securityContext:
-                  privileged: true       # Enable privileged mode for Docker
-                  runAsUser: 0           # Run as root user to access Docker socket
+                  privileged: true
+                  runAsUser: 0
                 command:
                 - sh
                 - -c
@@ -36,13 +35,14 @@ pipeline {
     }
 
     environment {
-        KUBECONFIG = "${env.WORKSPACE}/.kube/config"  // Add KUBECONFIG environment variable
+        KUBECONFIG = "${env.WORKSPACE}/.kube/config"
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
                 checkout scm
+                sh 'ls -la'  // Verify workspace after checkout
             }
         }
 
@@ -87,6 +87,8 @@ pipeline {
                         withEnv(["KUBECONFIG=${env.KUBECONFIG}"]) {
                             sh 'helm version'
                             sh 'kubectl get nodes'
+                            sh 'ls -R ./my-polybot-app-chart'  // Verify files
+                            sh 'cat ./my-polybot-app-chart/Chart.yaml'  // Ensure Chart.yaml exists
                             sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                         }
                     }
@@ -97,7 +99,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            // cleanWs()  # Comment this out for now
         }
     }
 }
