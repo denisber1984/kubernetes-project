@@ -4,9 +4,10 @@ metadata:
   name: jenkins-admin
 subjects:
 - kind: ServiceAccount
-  name: jenkins-admin   # Ensure this is the correct ServiceAccount name
-  namespace: jenkins    # Ensure the namespace matches where Jenkins is running
+  name: jenkins-admin  # Ensure this is the correct ServiceAccount name
+  namespace: jenkins   # Ensure the namespace matches where Jenkins is running
 roleRef:
   kind: ClusterRole
-  name: cluster-admin   # Ensure it's bound to the cluster-admin role
+  name: jenkins-admin  # Change this to match your custom role
   apiGroup: rbac.authorization.k8s.io
+
