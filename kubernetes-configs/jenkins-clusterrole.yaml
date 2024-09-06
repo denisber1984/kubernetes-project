@@ -4,8 +4,8 @@ metadata:
   name: jenkins-admin
 rules:
   - apiGroups: [""]
-    resources: ["pods", "pods/log", "secrets", "configmaps"]
-    verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+    resources: ["pods", "pods/exec", "pods/log", "secrets", "configmaps", "nodes"]
+    verbs: ["get", "list", "watch", "create", "delete", "update", "patch", "exec"]
   - apiGroups: ["apps"]
     resources: ["deployments", "replicasets"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
@@ -15,3 +15,4 @@ rules:
   - apiGroups: ["rbac.authorization.k8s.io"]
     resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
+
