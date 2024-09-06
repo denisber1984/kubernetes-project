@@ -10,4 +10,3 @@ rules:
 - apiGroups: ["apps"]
   resources: ["deployments", "replicasets"]
   verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
-
