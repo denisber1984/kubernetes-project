@@ -92,7 +92,7 @@ pipeline {
                             sh 'kubectl get nodes'
                             sh 'ls -R ./my-polybot-app-chart'  // Verify files
                             sh 'cat ./my-polybot-app-chart/Chart.yaml'  // Ensure Chart.yaml exists
-                            sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
+                            sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp -f ./my-polybot-app-chart/values.yaml'
                         }
                     }
                 }

@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: denisber1984/mypolybot
+  tag: "polybot-image-v1"
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8443
+
+ingress:
+  enabled: true
+  annotations: {}
+  hosts:
+    - host: my-python-app.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+namespace: demoapp  # Explicitly set the namespace

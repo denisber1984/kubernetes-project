@@ -1,0 +1,38 @@
+replicaCount: 2
+
+image:
+  repository: denisber1984/mypolybot
+  tag: web-image-v1
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8444
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "250m"
+  limits:
+    memory: "128Mi"
+    cpu: "500m"
+
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 50
+
+pvc:
+  storage: 1Gi
+ingress:
+  host: my-new-host.example
+namespace: demoapp
