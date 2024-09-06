@@ -5,7 +5,7 @@ metadata:
   name: jenkins-rolebinding
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: jenkins-admin
   namespace: jenkins
 roleRef:
   kind: Role
