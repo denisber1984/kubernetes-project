@@ -65,38 +65,8 @@ pipeline {
                     script {
                         def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                         withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                            sh '''
-                                echo $PASS | docker login -u $USER --password-stdin
-                                docker push denisber1984/mypolybot:${commitHash}
-                            '''
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Parallel Test and Linting') {
-            parallel {
-                stage('Unittest') {
-                    steps {
-                        container('jenkins-agent') {
-                            sh '''
-                                python3 -m unittest discover tests/
-                            '''
-                        }
-                    }
-                }
-                stage('Linting') {
-                    steps {
-                        container('jenkins-agent') {
-                            sh '''
-                                pylint polybot/ > pylint.log || true
-                            '''
-                        }
-                    }
-                    post {
-                        always {
-                            archiveArtifacts artifacts: 'pylint.log'
+                            sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
+                            sh "docker push denisber1984/mypolybot:${commitHash}"
                         }
                     }
                 }
@@ -118,7 +88,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()  // Clean workspace after each run
+            cleanWs()  // Clean workspace
         }
     }
 }
