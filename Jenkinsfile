@@ -65,8 +65,10 @@ pipeline {
                     script {
                         def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                         withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                            sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
-                            sh "docker push denisber1984/mypolybot:${commitHash}"
+                            sh '''
+                                echo $PASS | docker login -u $USER --password-stdin
+                                docker push denisber1984/mypolybot:${commitHash}
+                            '''
                         }
                     }
                 }
@@ -79,7 +81,6 @@ pipeline {
                     steps {
                         container('jenkins-agent') {
                             sh '''
-                                # Example command to run unit tests
                                 python3 -m unittest discover tests/
                             '''
                         }
@@ -89,14 +90,13 @@ pipeline {
                     steps {
                         container('jenkins-agent') {
                             sh '''
-                                # Example command to run pylint
                                 pylint polybot/ > pylint.log || true
                             '''
                         }
                     }
                     post {
                         always {
-                            recordIssues enabledForFailure: true, aggregatingResults: true, tools: [pyLint(pattern: 'pylint.log')]
+                            archiveArtifacts artifacts: 'pylint.log'
                         }
                     }
                 }
