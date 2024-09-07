@@ -73,6 +73,36 @@ pipeline {
             }
         }
 
+        stage('Parallel Test and Linting') {
+            parallel {
+                stage('Unittest') {
+                    steps {
+                        container('jenkins-agent') {
+                            sh '''
+                                # Example command to run unit tests
+                                python3 -m unittest discover tests/
+                            '''
+                        }
+                    }
+                }
+                stage('Linting') {
+                    steps {
+                        container('jenkins-agent') {
+                            sh '''
+                                # Example command to run pylint
+                                pylint polybot/ > pylint.log || true
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            recordIssues enabledForFailure: true, aggregatingResults: true, tools: [pyLint(pattern: 'pylint.log')]
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 container('jenkins-agent') {
@@ -88,7 +118,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()  // Clean workspace
+            cleanWs()  // Clean workspace after each run
         }
     }
 }
