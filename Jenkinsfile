@@ -5,6 +5,7 @@ pipeline {
             apiVersion: v1
             kind: Pod
             spec:
+              serviceAccountName: jenkins-admin   # <--- Add this line to specify the service account
               containers:
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-kubectl
