@@ -5,7 +5,7 @@ pipeline {
             apiVersion: v1
             kind: Pod
             spec:
-              serviceAccountName: jenkins-admin   # <--- Add this line to specify the service account
+              serviceAccountName: jenkins-admin   # <--- Specify the service account
               containers:
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-kubectl
@@ -40,12 +40,15 @@ pipeline {
     }
 
     stages {
+        // Stage 1: Checkout code and ensure files are there
         stage('Checkout SCM') {
             steps {
                 checkout scm
+                sh 'ls -la'  // List the files in the workspace to ensure everything is checked out
             }
         }
 
+        // Stage 2: Build Docker Image
         stage('Build Docker Image') {
             steps {
                 container('jenkins-agent') {
@@ -61,6 +64,7 @@ pipeline {
             }
         }
 
+        // Stage 3: Deploy using Helm
         stage('Helm Deployment') {
             steps {
                 container('jenkins-agent') {
@@ -73,16 +77,19 @@ pipeline {
             }
         }
 
+        // Stage 4: Apply or Update ArgoCD Application
         stage('Create/Update ArgoCD Application') {
             steps {
                 container('jenkins-agent') {
                     script {
-                        sh 'kubectl apply -f application.yaml -n argocd'
+                        // Make sure 'application.yaml' is in the 'argocd-config' folder
+                        sh 'kubectl apply -f argocd-config/application.yaml -n argocd'
                     }
                 }
             }
         }
 
+        // Stage 5: Sync ArgoCD Application
         stage('Sync ArgoCD Application') {
             steps {
                 container('jenkins-agent') {
@@ -96,7 +103,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            cleanWs()  // Clean workspace after pipeline execution
         }
     }
 }
