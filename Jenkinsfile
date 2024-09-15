@@ -5,7 +5,7 @@ pipeline {
             apiVersion: v1
             kind: Pod
             spec:
-              serviceAccountName: jenkins-admin   # <--- Specify the service account
+              serviceAccountName: jenkins-admin
               containers:
               - name: jenkins-agent
                 image: denisber1984/jenkins-agent:helm-kubectl
@@ -40,7 +40,6 @@ pipeline {
     }
 
     stages {
-        // Stage 1: Checkout code and ensure files are there
         stage('Checkout SCM') {
             steps {
                 checkout scm
@@ -48,7 +47,32 @@ pipeline {
             }
         }
 
-        // Stage 2: Build Docker Image
+        stage('Install Python Requirements') {
+            steps {
+                container('jenkins-agent') {
+                    // Install Python dependencies
+                    sh """
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install pytest unittest2 pylint flask telebot Pillow loguru matplotlib
+                    """
+                }
+            }
+        }
+
+        stage('Unittest') {
+            steps {
+                container('jenkins-agent') {
+                    // Run unittests
+                    sh """
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        python -m pytest --junitxml results.xml polybot/test
+                    """
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 container('jenkins-agent') {
@@ -64,7 +88,6 @@ pipeline {
             }
         }
 
-        // Stage 3: Deploy using Helm
         stage('Helm Deployment') {
             steps {
                 container('jenkins-agent') {
@@ -77,19 +100,16 @@ pipeline {
             }
         }
 
-        // Stage 4: Apply or Update ArgoCD Application
         stage('Create/Update ArgoCD Application') {
             steps {
                 container('jenkins-agent') {
                     script {
-                        // Make sure 'application.yaml' is in the 'argocd-config' folder
                         sh 'kubectl apply -f argocd-config/application.yaml -n argocd'
                     }
                 }
             }
         }
 
-        // Stage 5: Sync ArgoCD Application
         stage('Sync ArgoCD Application') {
             steps {
                 container('jenkins-agent') {
@@ -103,7 +123,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()  // Clean workspace after pipeline execution
+            cleanWs()
         }
     }
 }
