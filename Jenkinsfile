@@ -3,12 +3,16 @@ pipeline {
         choice(name: 'AGENT_TYPE', choices: ['kubernetes', 'ec2'], description: 'Choose the type of agent to run the job')
     }
 
+    // Use 'none' for the global agent to dynamically assign agents later in the pipeline
+    agent none
+
     environment {
         KUBECONFIG = "${env.WORKSPACE}/.kube/config"
     }
 
     stages {
         stage('Select Agent') {
+            agent none // No global agent, agents will be selected dynamically
             steps {
                 script {
                     if (params.AGENT_TYPE == 'kubernetes') {
@@ -90,7 +94,7 @@ def runPipeline() {
     }
 
     stage('Helm Deployment') {
-        withEnv(["KUBECONFIG=${env.KUBECONFIG}"]) {
+        withEnv(["KUBECONFIG=${env.WORKSPACE}"]) {
             sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
         }
     }
