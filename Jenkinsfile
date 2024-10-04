@@ -3,46 +3,9 @@ pipeline {
         choice(name: 'AGENT_TYPE', choices: ['kubernetes', 'ec2'], description: 'Choose the type of agent to run the job')
     }
 
+    // Dynamically set agent based on the parameter
     agent {
-        // Dynamically select the agent type based on the AGENT_TYPE parameter
-        if (params.AGENT_TYPE == 'kubernetes') {
-            kubernetes {
-                yaml """
-                apiVersion: v1
-                kind: Pod
-                spec:
-                  serviceAccountName: jenkins-admin
-                  containers:
-                  - name: jenkins-agent
-                    image: denisber1984/jenkins-agent:helm-kubectl
-                    securityContext:
-                      privileged: true
-                      runAsUser: 0
-                    command:
-                    - sh
-                    - -c
-                    - |
-                      git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline
-                      cat
-                    tty: true
-                    volumeMounts:
-                    - mountPath: /var/run/docker.sock
-                      name: docker-sock
-                    - mountPath: /home/jenkins/agent
-                      name: workspace-volume
-                  volumes:
-                  - hostPath:
-                      path: /var/run/docker.sock
-                    name: docker-sock
-                  - emptyDir:
-                      medium: ""
-                    name: workspace-volume
-                """
-            }
-        } else {
-            // Use the correct label for EC2 fleet agent
-            label 'ec2-fleet'
-        }
+        label AGENT_TYPE == 'ec2' ? 'ec2-fleet' : ''
     }
 
     environment {
@@ -50,6 +13,50 @@ pipeline {
     }
 
     stages {
+        stage('Select Agent') {
+            when {
+                expression { params.AGENT_TYPE == 'kubernetes' }
+            }
+            agent {
+                kubernetes {
+                    yaml """
+                    apiVersion: v1
+                    kind: Pod
+                    spec:
+                      serviceAccountName: jenkins-admin
+                      containers:
+                      - name: jenkins-agent
+                        image: denisber1984/jenkins-agent:helm-kubectl
+                        securityContext:
+                          privileged: true
+                          runAsUser: 0
+                        command:
+                        - sh
+                        - -c
+                        - |
+                          git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline
+                          cat
+                        tty: true
+                        volumeMounts:
+                        - mountPath: /var/run/docker.sock
+                          name: docker-sock
+                        - mountPath: /home/jenkins/agent
+                          name: workspace-volume
+                      volumes:
+                      - hostPath:
+                          path: /var/run/docker.sock
+                        name: docker-sock
+                      - emptyDir:
+                          medium: ""
+                        name: workspace-volume
+                    """
+                }
+            }
+            steps {
+                echo "Using Kubernetes Agent"
+            }
+        }
+
         stage('Checkout SCM') {
             steps {
                 checkout scm
@@ -134,7 +141,7 @@ pipeline {
                             }
                         }
                     } else {
-                        withEnv(["KUBECONFIG=${env.KUBECONFIG}"]) {
+                        withEnv(["KUBECONFIG=${env.WORKSPACE}/.kube/config"]) {
                             sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace demoapp'
                         }
                     }
