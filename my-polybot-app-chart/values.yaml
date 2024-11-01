@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
 
 service:
-  type: NodePort
+  type: LoadBalancer  # Use LoadBalancer for AWS
   port: 8443
 
 ingress:
@@ -23,4 +23,4 @@ resources: {}
 nodeSelector: {}
 tolerations: []
 affinity: {}
-namespace: demoapp  # Explicitly set the namespace
+namespace: den-pollyapp  # Set namespace to den-pollyapp

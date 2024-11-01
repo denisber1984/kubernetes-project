@@ -1,0 +1,52 @@
+controller:
+  serviceType: LoadBalancer  # Expose Jenkins via LoadBalancer service
+  admin:
+    username: admin
+    password: Bezeq5960!  # Admin password
+  JCasC:
+    enabled: false  # Enabling Jenkins Configuration as Code (JCasC)
+    configScripts:
+      aws-cloud: |
+        jenkins:
+          clouds:
+            - amazonEC2:
+                name: "aws-ec2-fleet"
+                credentialsId: "aws-credentials"
+  serviceAnnotations:  # Add service annotations for LoadBalancer behavior
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+  persistence:
+    enabled: true
+    storageClass: gp2  # Set to AWS default StorageClass for dynamic provisioning
+    size: 8Gi  # Adjusted size for Jenkins home storage
+    accessMode: ReadWriteOnce  # Standard access mode
+  resources:
+    limits:
+      memory: "4Gi"
+      cpu: "2"
+    requests:
+      memory: "500Mi"
+      cpu: "500m"
+  livenessProbe:
+    httpGet:
+      path: "/login"
+      port: 8080
+    initialDelaySeconds: 90
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 5
+  readinessProbe:
+    httpGet:
+      path: "/login"
+      port: 8080
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+rbac:
+  create: true
+  serviceAccount:
+    create: true
+    name: jenkins-admin  # Ensure ServiceAccount is correctly linked

@@ -5,7 +5,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: jenkins-admin
-  namespace: jenkins  # Jenkins namespace
+  namespace: den-jenkins  # Updated to den-jenkins
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

@@ -1,0 +1,14 @@
+controller:
+  serviceType: LoadBalancer  # Expose Jenkins via LoadBalancer service
+  admin:
+    username: admin           # Updated field for admin username
+    password: Bezeq5960!     # Admin password
+  JCasC:
+    defaultConfig: false
+  serviceAnnotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+persistence:
+  storageClass: gp2           # EBS storage class for persistent volume
+  size: 50Gi                  # Persistent volume size

@@ -1,12 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  namespace: demoapp
+  namespace: den-jenkins
   name: jenkins-rolebinding
 subjects:
 - kind: ServiceAccount
   name: jenkins-admin  # Make sure it's jenkins-admin
-  namespace: jenkins
+  namespace: den-jenkins
 roleRef:
   kind: Role
   name: jenkins-role
