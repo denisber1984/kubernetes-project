@@ -18,41 +18,6 @@ pipeline {
             when {
                 expression { params.AGENT_TYPE == 'kubernetes' }
             }
-            agent {
-                kubernetes {
-                    yaml """
-                    apiVersion: v1
-                    kind: Pod
-                    spec:
-                      serviceAccountName: jenkins-admin
-                      containers:
-                      - name: jenkins-agent
-                        image: denisber1984/jenkins-agent:aws-k8s-agent
-                        securityContext:
-                          privileged: true
-                          runAsUser: 0
-                        command:
-                        - sh
-                        - -c
-                        - |
-                          git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline
-                          cat
-                        tty: true
-                        volumeMounts:
-                        - mountPath: /var/run/docker.sock
-                          name: docker-sock
-                        - mountPath: /home/jenkins/agent
-                          name: workspace-volume
-                      volumes:
-                      - hostPath:
-                          path: /var/run/docker.sock
-                        name: docker-sock
-                      - emptyDir:
-                          medium: ""
-                        name: workspace-volume
-                    """
-                }
-            }
             steps {
                 echo "Using Kubernetes Agent"
             }
