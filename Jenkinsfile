@@ -63,7 +63,11 @@ pipeline {
                             }
                         }
                     } else {
-                        withEnv(["KUBECONFIG=${env.WORKSPACE}/.kube/config"]) {
+                        // Use EKS cluster configuration for EC2
+                        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
+                            sh """
+                                aws eks update-kubeconfig --region ${AWS_REGION} --name eks-X10-prod-01
+                            """
                             sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace den-pollyapp'
                         }
                     }
