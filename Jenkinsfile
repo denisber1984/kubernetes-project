@@ -63,11 +63,7 @@ pipeline {
                             }
                         }
                     } else {
-                        // Use EKS cluster configuration for EC2
-                        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
-                            sh """
-                                aws eks update-kubeconfig --region ${AWS_REGION} --name eks-X10-prod-01
-                            """
+                        withEnv(["KUBECONFIG=${env.WORKSPACE}/.kube/config"]) {
                             sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace den-pollyapp'
                         }
                     }
@@ -105,6 +101,20 @@ pipeline {
     }
 
     post {
+        success {
+            snsPublish(
+                topicArn: 'arn:aws:sns:us-east-2:023196572641:den-jenkins-build-notifications',
+                message: "Build succeeded for ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "Jenkins Build Success"
+            )
+        }
+        failure {
+            snsPublish(
+                topicArn: 'arn:aws:sns:us-east-2:023196572641:den-jenkins-build-notifications',
+                message: "Build failed for ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "Jenkins Build Failure"
+            )
+        }
         always {
             cleanWs()
         }
