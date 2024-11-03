@@ -3,10 +3,6 @@ pipeline {
         choice(name: 'AGENT_TYPE', choices: ['kubernetes', 'ec2'], description: 'Choose the type of agent to run the job')
     }
 
-    agent {
-        label AGENT_TYPE == 'ec2' ? 'ec2-fleet' : ''
-    }
-
     environment {
         ECR_REPOSITORY = "023196572641.dkr.ecr.us-east-2.amazonaws.com/denber1984/app-repo"
         AWS_REGION = 'us-east-2'
@@ -59,6 +55,7 @@ pipeline {
         }
 
         stage('Checkout SCM') {
+            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 checkout scm
                 sh 'ls -la'
@@ -66,6 +63,7 @@ pipeline {
         }
 
         stage('Build Docker Image') {
+            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 script {
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
@@ -89,6 +87,7 @@ pipeline {
         }
 
         stage('Helm Deployment') {
+            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 script {
                     if (params.AGENT_TYPE == 'kubernetes') {
@@ -98,12 +97,10 @@ pipeline {
                             }
                         }
                     } else {
-                        // Configure kubeconfig dynamically for EKS
                         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
                             sh """
                                 aws eks update-kubeconfig --region ${AWS_REGION} --name eks-X10-prod-01
                             """
-                            // Run Helm deployment with KUBECONFIG set for EKS
                             sh 'helm upgrade --install my-polybot-app ./my-polybot-app-chart --namespace den-pollyapp'
                         }
                     }
@@ -112,6 +109,7 @@ pipeline {
         }
 
         stage('Create/Update ArgoCD Application') {
+            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 script {
                     if (params.AGENT_TYPE == 'kubernetes') {
@@ -126,6 +124,7 @@ pipeline {
         }
 
         stage('Sync ArgoCD Application') {
+            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 script {
                     if (params.AGENT_TYPE == 'kubernetes') {
