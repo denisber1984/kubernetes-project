@@ -3,6 +3,10 @@ pipeline {
         choice(name: 'AGENT_TYPE', choices: ['kubernetes', 'ec2'], description: 'Choose the type of agent to run the job')
     }
 
+    agent {
+        label AGENT_TYPE == 'ec2' ? 'ec2-fleet' : ''
+    }
+
     environment {
         ECR_REPOSITORY = "023196572641.dkr.ecr.us-east-2.amazonaws.com/denber1984/app-repo"
         AWS_REGION = 'us-east-2'
@@ -14,48 +18,12 @@ pipeline {
             when {
                 expression { params.AGENT_TYPE == 'kubernetes' }
             }
-            agent {
-                kubernetes {
-                    yaml """
-                    apiVersion: v1
-                    kind: Pod
-                    spec:
-                      serviceAccountName: jenkins-admin
-                      containers:
-                      - name: jenkins-agent
-                        image: denisber1984/jenkins-agent:aws-k8s-agent
-                        securityContext:
-                          privileged: true
-                          runAsUser: 0
-                        command:
-                        - sh
-                        - -c
-                        - |
-                          git config --global --add safe.directory /home/jenkins/agent/workspace/kubernetes-project-pipeline
-                          cat
-                        tty: true
-                        volumeMounts:
-                        - mountPath: /var/run/docker.sock
-                          name: docker-sock
-                        - mountPath: /home/jenkins/agent
-                          name: workspace-volume
-                      volumes:
-                      - hostPath:
-                          path: /var/run/docker.sock
-                        name: docker-sock
-                      - emptyDir:
-                          medium: ""
-                        name: workspace-volume
-                    """
-                }
-            }
             steps {
                 echo "Using Kubernetes Agent"
             }
         }
 
         stage('Checkout SCM') {
-            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 checkout scm
                 sh 'ls -la'
@@ -63,7 +31,6 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 script {
                     def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
@@ -87,7 +54,6 @@ pipeline {
         }
 
         stage('Helm Deployment') {
-            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 script {
                     if (params.AGENT_TYPE == 'kubernetes') {
@@ -97,6 +63,7 @@ pipeline {
                             }
                         }
                     } else {
+                        // Use EKS cluster configuration for EC2
                         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
                             sh """
                                 aws eks update-kubeconfig --region ${AWS_REGION} --name eks-X10-prod-01
@@ -109,7 +76,6 @@ pipeline {
         }
 
         stage('Create/Update ArgoCD Application') {
-            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 script {
                     if (params.AGENT_TYPE == 'kubernetes') {
@@ -124,7 +90,6 @@ pipeline {
         }
 
         stage('Sync ArgoCD Application') {
-            agent { label params.AGENT_TYPE == 'ec2' ? 'ec2-fleet' : '' }
             steps {
                 script {
                     if (params.AGENT_TYPE == 'kubernetes') {
