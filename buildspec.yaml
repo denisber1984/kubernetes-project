@@ -9,7 +9,7 @@ phases:
   pre_build:
     commands:
       - echo Building the Docker image...
-      - docker build -t mypolybot .
+      - docker build -t mypolybot polybot/
       - docker tag mypolybot:latest 023196572641.dkr.ecr.us-east-2.amazonaws.com/denber1984/app-repo:latest
 
   build:
