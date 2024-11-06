@@ -1,5 +1,10 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: "us-east-2"
+    KUBECONFIG: "/root/.kube/config"
+
 phases:
   install:
     commands:
@@ -21,6 +26,9 @@ phases:
     commands:
       - echo Deploying to EKS...
       - aws eks update-kubeconfig --region us-east-2 --name eks-X10-prod-01
+      - echo Checking IAM identity...
+      - aws sts get-caller-identity
+      - echo Setting image on EKS deployment...
       - kubectl set image deployment/my-polybot-app my-polybot-app=023196572641.dkr.ecr.us-east-2.amazonaws.com/denber1984/app-repo:latest -n den-pollyapp
 
 artifacts:
